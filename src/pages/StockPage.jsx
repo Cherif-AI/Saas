@@ -6,7 +6,7 @@ import {
 } from '@/hooks'
 import { formatFCFA } from '@/utils'
 import { PageLoader, EmptyState, Modal, Field, Pagination } from '@/components/ui'
-import { Package, Plus, Pencil, ArrowUpCircle, ArrowDownCircle, SlidersHorizontal, AlertTriangle } from 'lucide-react'
+import { Package, Plus, Pencil, ArrowUpCircle, ArrowDownCircle, SlidersHorizontal, AlertTriangle, TrendingDown } from 'lucide-react'
 
 // ── Formulaire produit ────────────────────────────────────────
 function ProduitForm({ initial, onSubmit, isPending, onClose }) {
@@ -62,15 +62,18 @@ function MouvementForm({ produit, onClose }) {
 
   return (
     <div>
-      <div className="bg-surface rounded-xl p-3 mb-4 flex items-center justify-between">
+      <div className="bg-surface rounded-xl p-4 mb-5 flex items-center justify-between border border-surface-dark">
         <div>
-          <div className="font-semibold text-sm">{produit.nom}</div>
-          <div className="text-xs text-ink-muted">Stock actuel : <span className={`font-bold font-mono ${produit.stockBas ? 'text-danger' : 'text-success'}`}>{produit.stockActuel} {produit.unite}</span></div>
+          <div className="font-semibold text-sm text-ink">{produit.nom}</div>
+          <div className="text-xs text-ink-muted mt-0.5">
+            Stock actuel :{' '}
+            <span className={`font-bold font-mono ${produit.stockBas ? 'text-danger' : 'text-success'}`}>
+              {produit.stockActuel} {produit.unite}
+            </span>
+          </div>
         </div>
         {produit.stockBas && (
-          <div className="flex items-center gap-1 text-xs text-accent font-semibold">
-            <AlertTriangle size={13} /> Stock bas
-          </div>
+          <span className="badge badge-red text-xs"><AlertTriangle size={10} /> Stock bas</span>
         )}
       </div>
 
@@ -79,14 +82,14 @@ function MouvementForm({ produit, onClose }) {
         <Field label="Type de mouvement" required>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { v: 'ENTREE', label: 'Entrée', icon: ArrowUpCircle, color: 'text-success' },
-              { v: 'SORTIE', label: 'Sortie', icon: ArrowDownCircle, color: 'text-danger' },
+              { v: 'ENTREE',     label: 'Entrée',     icon: ArrowUpCircle,   color: 'text-success' },
+              { v: 'SORTIE',     label: 'Sortie',     icon: ArrowDownCircle, color: 'text-danger'  },
               { v: 'AJUSTEMENT', label: 'Ajustement', icon: SlidersHorizontal, color: 'text-primary' },
             ].map(({ v, label, icon: Icon, color }) => (
-              <label key={v} className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 cursor-pointer transition-all
-                ${type === v ? 'border-primary bg-primary/5' : 'border-surface-dark hover:border-ink-faint'}`}>
+              <label key={v} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 cursor-pointer transition-all
+                ${type === v ? 'border-primary bg-primary/5 shadow-sm' : 'border-surface-dark hover:border-ink-faint'}`}>
                 <input type="radio" value={v} className="sr-only" {...register('type')} />
-                <Icon size={18} className={type === v ? 'text-primary' : color} />
+                <Icon size={20} className={type === v ? 'text-primary' : color} />
                 <span className="text-xs font-semibold text-ink">{label}</span>
               </label>
             ))}
@@ -117,14 +120,14 @@ function MouvementForm({ produit, onClose }) {
 
 // ── Page stock ────────────────────────────────────────────────
 export default function StockPage() {
-  const [page, setPage]           = useState(0)
+  const [page, setPage]             = useState(0)
   const [showCreate, setShowCreate] = useState(false)
-  const [editProduit, setEdit]    = useState(null)
-  const [mouvProduit, setMouv]    = useState(null)
+  const [editProduit, setEdit]      = useState(null)
+  const [mouvProduit, setMouv]      = useState(null)
   const [showAlertes, setShowAlertes] = useState(false)
 
-  const { data, isLoading }       = useProduits({ page, size: 20 })
-  const { data: alertes }         = useAlertesStock()
+  const { data, isLoading }         = useProduits({ page, size: 20 })
+  const { data: alertes }           = useAlertesStock()
   const { mutate: create, isPending: creating } = useCreateProduit()
   const { mutate: update, isPending: updating } = useUpdateProduit()
 
@@ -133,10 +136,12 @@ export default function StockPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="page-header">
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="page-title">Stock</h1>
-          <p className="text-sm text-ink-muted mt-1">{data?.totalElements || 0} produit(s)</p>
+          <h1 className="text-2xl font-bold text-primary tracking-tight">Stock</h1>
+          <p className="text-sm text-ink-muted mt-1">{data?.totalElements || 0} produit(s) référencé(s)</p>
         </div>
         <div className="flex gap-2">
           {nbAlertes > 0 && (
@@ -149,6 +154,23 @@ export default function StockPage() {
           </button>
         </div>
       </div>
+
+      {/* Bannière alerte */}
+      {nbAlertes > 0 && (
+        <div className="mb-6 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3.5 cursor-pointer hover:bg-amber-100 transition-colors"
+          onClick={() => setShowAlertes(true)}>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle size={17} className="text-white" />
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold text-amber-800 text-sm">
+              {nbAlertes} produit{nbAlertes > 1 ? 's' : ''} en rupture imminente
+            </div>
+            <div className="text-xs text-amber-600">Cliquez pour voir les détails</div>
+          </div>
+          <TrendingDown size={16} className="text-amber-500" />
+        </div>
+      )}
 
       {isLoading ? <PageLoader /> : produits.length === 0 ? (
         <EmptyState icon={Package} title="Aucun produit"
@@ -170,13 +192,25 @@ export default function StockPage() {
                 {produits.map(p => (
                   <tr key={p.id} className="tr-hover">
                     <td className="td">
-                      <div className="font-semibold text-sm">{p.nom}</div>
-                      {p.description && <div className="text-xs text-ink-faint truncate max-w-[200px]">{p.description}</div>}
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                          ${p.stockBas ? 'bg-red-100' : 'bg-primary/8'}`}>
+                          <Package size={14} className={p.stockBas ? 'text-danger' : 'text-primary'} />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">{p.nom}</div>
+                          {p.description && <div className="text-xs text-ink-faint truncate max-w-[180px]">{p.description}</div>}
+                        </div>
+                      </div>
                     </td>
-                    <td className="td text-sm text-ink-muted">{p.categorie || '—'}</td>
+                    <td className="td">
+                      {p.categorie
+                        ? <span className="badge badge-gray text-xs">{p.categorie}</span>
+                        : <span className="text-ink-faint text-xs">—</span>}
+                    </td>
                     <td className="td font-mono font-semibold text-sm">{formatFCFA(p.prixUnitaire)}</td>
                     <td className="td">
-                      <span className={`font-mono font-bold text-lg ${p.stockBas ? 'text-danger' : 'text-success'}`}>
+                      <span className={`font-mono font-bold text-xl leading-none ${p.stockBas ? 'text-danger' : 'text-success'}`}>
                         {p.stockActuel}
                       </span>
                       <span className="text-xs text-ink-faint ml-1">{p.unite}</span>
@@ -185,7 +219,7 @@ export default function StockPage() {
                     <td className="td">
                       {p.stockBas
                         ? <span className="badge badge-red"><AlertTriangle size={10} /> Stock bas</span>
-                        : <span className="badge badge-green">OK</span>}
+                        : <span className="badge badge-green">✓ OK</span>}
                     </td>
                     <td className="td">
                       <div className="flex items-center gap-1">
@@ -222,16 +256,21 @@ export default function StockPage() {
       </Modal>
 
       {/* Modal alertes */}
-      <Modal open={showAlertes} onClose={() => setShowAlertes(false)} title={`Alertes stock (${nbAlertes})`}>
+      <Modal open={showAlertes} onClose={() => setShowAlertes(false)} title={`⚠️ Alertes stock (${nbAlertes})`}>
         <div className="flex flex-col gap-3">
           {(alertes || []).map(p => (
-            <div key={p.id} className="flex items-center justify-between p-3 bg-red-50 rounded-xl border border-red-100">
-              <div>
-                <div className="font-semibold text-sm">{p.nom}</div>
-                <div className="text-xs text-ink-muted">Seuil : {p.stockMinimum} {p.unite}</div>
+            <div key={p.id} className="flex items-center justify-between p-4 bg-red-50 rounded-2xl border border-red-100">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <Package size={15} className="text-danger" />
+                </div>
+                <div>
+                  <div className="font-semibold text-sm text-ink">{p.nom}</div>
+                  <div className="text-xs text-ink-muted">Seuil min : {p.stockMinimum} {p.unite}</div>
+                </div>
               </div>
               <div className="text-right">
-                <div className="font-bold text-danger font-mono text-lg">{p.stockActuel}</div>
+                <div className="font-bold text-danger font-mono text-xl leading-none">{p.stockActuel}</div>
                 <div className="text-xs text-ink-faint">{p.unite} restant{p.stockActuel > 1 ? 's' : ''}</div>
               </div>
             </div>

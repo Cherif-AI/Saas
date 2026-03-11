@@ -44,6 +44,14 @@ function ClientForm({ initial, onSubmit, isPending, onClose }) {
   )
 }
 
+const AVATAR_GRADIENTS = [
+  'from-blue-500 to-indigo-600',
+  'from-emerald-500 to-teal-600',
+  'from-violet-500 to-purple-600',
+  'from-orange-400 to-rose-500',
+  'from-primary to-primary-light',
+]
+
 export default function ClientsPage() {
   const [page, setPage]     = useState(0)
   const [search, setSearch] = useState('')
@@ -63,10 +71,14 @@ export default function ClientsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-6xl mx-auto">
-      <div className="page-header">
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="page-title">Clients</h1>
-          <p className="text-sm text-ink-faint mt-1">{data?.totalElements || 0} client(s)</p>
+          <h1 className="text-2xl font-bold text-primary tracking-tight">Clients</h1>
+          <p className="text-sm text-ink-muted mt-1">
+            {data?.totalElements || 0} client{(data?.totalElements || 0) > 1 ? 's' : ''} enregistré{(data?.totalElements || 0) > 1 ? 's' : ''}
+          </p>
         </div>
         <button className="btn-primary" onClick={() => setShowCreate(true)}>
           <Plus size={15} /> Nouveau client
@@ -101,19 +113,19 @@ export default function ClientsPage() {
             <table className="table-base">
               <thead>
                 <tr>
-                  {['Nom', 'Téléphone', 'Email', 'Adresse', 'Ajouté le', 'Actions'].map(h =>
+                  {['Client', 'Téléphone', 'Email', 'Adresse', 'Ajouté le', 'Actions'].map(h =>
                     <th key={h} className="th">{h}</th>)}
                 </tr>
               </thead>
               <tbody>
-                {clients.map(c => (
+                {clients.map((c, idx) => (
                   <tr key={c.id} className="tr-hover">
                     <td className="td">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-sm">
-                          <span className="text-white font-bold text-xs">{c.nom?.[0]?.toUpperCase()}</span>
+                        <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length]} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                          <span className="text-white font-bold text-sm">{c.nom?.[0]?.toUpperCase()}</span>
                         </div>
-                        <span className="font-semibold text-sm">{c.nom}</span>
+                        <span className="font-semibold text-sm text-ink">{c.nom}</span>
                       </div>
                     </td>
                     <td className="td">

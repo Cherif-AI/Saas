@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { useTransactions, useCreateTransaction } from '@/hooks'
 import { formatFCFA, formatDate, MODE_PAIEMENT_LABELS } from '@/utils'
 import { PageLoader, EmptyState, Modal, Field, Pagination } from '@/components/ui'
-import { Calculator, Plus, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Calculator, Plus, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react'
 
 const CATEGORIES_RECETTE = ['Ventes', 'Prestations', 'Remboursement', 'Autre recette']
 const CATEGORIES_DEPENSE = ['Achat stock', 'Loyer', 'Transport', 'Salaires', 'Téléphone', 'Eau/Électricité', 'Marketing', 'Autre dépense']
@@ -19,6 +19,7 @@ function TransactionForm({ onClose }) {
   return (
     <form onSubmit={handleSubmit(d => mutate({ ...d, montant: Number(d.montant) }, { onSuccess: onClose }))}
       className="flex flex-col gap-4">
+
       <Field label="Type de transaction" required>
         <div className="grid grid-cols-2 gap-3">
           {[
@@ -97,51 +98,54 @@ export default function ComptabilitePage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-5xl mx-auto">
-      <div className="page-header">
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="page-title">Comptabilité</h1>
-          <p className="text-sm text-ink-faint mt-1">{data?.totalElements || 0} transaction(s)</p>
+          <h1 className="text-2xl font-bold text-primary tracking-tight">Comptabilité</h1>
+          <p className="text-sm text-ink-muted mt-1">{data?.totalElements || 0} transaction(s) enregistrée(s)</p>
         </div>
         <button className="btn-primary" onClick={() => setShowCreate(true)}>
           <Plus size={15} /> Nouvelle transaction
         </button>
       </div>
 
-      {/* Mini KPIs */}
-      {transactions.length > 0 && (
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="card flex items-center gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
-              <TrendingUp size={18} className="text-white" />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-0.5">Recettes</div>
-              <div className="font-mono font-bold text-success text-lg leading-none">{formatFCFA(totalRecettes)}</div>
-            </div>
+      {/* KPIs */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="card flex items-center gap-4 overflow-hidden relative">
+          <div className="absolute -top-3 -right-3 w-16 h-16 rounded-full bg-emerald-500 opacity-5" />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+            <TrendingUp size={18} className="text-white" />
           </div>
-          <div className="card flex items-center gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center flex-shrink-0">
-              <TrendingDown size={18} className="text-white" />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-0.5">Dépenses</div>
-              <div className="font-mono font-bold text-danger text-lg leading-none">{formatFCFA(totalDepenses)}</div>
-            </div>
+          <div>
+            <div className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-0.5">Recettes</div>
+            <div className="font-mono font-bold text-success text-xl leading-none">{formatFCFA(totalRecettes)}</div>
           </div>
-          <div className="card flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0
-              ${solde >= 0 ? 'bg-gradient-to-br from-primary to-primary-light' : 'bg-gradient-to-br from-rose-500 to-rose-600'}`}>
-              <Calculator size={18} className="text-white" />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-0.5">Solde page</div>
-              <div className={`font-mono font-bold text-lg leading-none ${solde >= 0 ? 'text-primary' : 'text-danger'}`}>
-                {formatFCFA(solde)}
-              </div>
+        </div>
+        <div className="card flex items-center gap-4 overflow-hidden relative">
+          <div className="absolute -top-3 -right-3 w-16 h-16 rounded-full bg-rose-500 opacity-5" />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center flex-shrink-0">
+            <TrendingDown size={18} className="text-white" />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-0.5">Dépenses</div>
+            <div className="font-mono font-bold text-danger text-xl leading-none">{formatFCFA(totalDepenses)}</div>
+          </div>
+        </div>
+        <div className="card flex items-center gap-4 overflow-hidden relative">
+          <div className={`absolute -top-3 -right-3 w-16 h-16 rounded-full opacity-5 ${solde >= 0 ? 'bg-primary' : 'bg-rose-500'}`} />
+          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0
+            ${solde >= 0 ? 'bg-gradient-to-br from-primary to-primary-light' : 'bg-gradient-to-br from-rose-500 to-rose-600'}`}>
+            <Wallet size={18} className="text-white" />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-0.5">Solde</div>
+            <div className={`font-mono font-bold text-xl leading-none ${solde >= 0 ? 'text-primary' : 'text-danger'}`}>
+              {solde >= 0 ? '+' : ''}{formatFCFA(solde)}
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Filtre */}
       <div className="flex gap-3 mb-6">
@@ -178,7 +182,9 @@ export default function ComptabilitePage() {
                         : <span className="badge badge-red"><ArrowDownRight size={10} /> Dépense</span>}
                     </td>
                     <td className="td font-semibold text-sm">{t.categorie}</td>
-                    <td className="td text-sm text-ink-muted max-w-[200px] truncate">{t.description || <span className="text-ink-faint text-xs">—</span>}</td>
+                    <td className="td text-sm text-ink-muted max-w-[200px] truncate">
+                      {t.description || <span className="text-ink-faint text-xs">—</span>}
+                    </td>
                     <td className="td">
                       <span className="badge badge-gray text-xs">{MODE_PAIEMENT_LABELS[t.modePaiement] || t.modePaiement}</span>
                     </td>
